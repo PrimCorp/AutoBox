@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUTOBOX – Máquinas Dispensadoras</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;0,900;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root {
+  --negro: #080810;
+  --acero: #10101e;
+  --card: #0e0e1c;
+  --borde: #1e1e38;
+  --azul: #00c8ff;
+  --verde: #00ffaa;
+  --naranja: #ff6a00;
+  --amarillo: #ffd700;
+  --blanco: #eef2ff;
+  --gris: #7080a0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--negro);
+  color: var(--blanco);
+  font-family: 'Exo 2', sans-serif;
+  overflow-x: hidden;
+}
+
+/* BG */
+.bg-layer {
+  position: fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 5% 15%, rgba(0,200,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 95% 85%, rgba(0,255,170,0.05) 0%, transparent 60%);
+}
+.grid-layer {
+  position: fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,200,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,255,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* NAV */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 16px 48px;
+  background: rgba(8,8,16,0.9);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--borde);
+}
+.logo {
+  font-family:'Black Ops One', cursive;
+  font-size: 1.7rem; letter-spacing:5px;
+  background: linear-gradient(120deg, var(--azul), var(--verde));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.nav-links { display:flex; gap:32px; }
+.nav-links a {
+  color:var(--gris); text-decoration:none;
+  font-size:0.78rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  transition:color 0.3s;
+}
+.nav-links a:hover { color:var(--azul); }
+
+/* HERO */
+.hero {
+  position:relative; z-index:1;
+  min-height:100vh;
+  display:grid; grid-template-columns:1fr 1fr;
+  align-items:center;
+  padding: 120px 48px 80px;
+  gap: 40px;
+  max-width: 1300px; margin:0 auto;
+}
+@media(max-width:900px){
+  .hero { grid-template-columns:1fr; padding:120px 24px 60px; }
+  nav { padding:16px 24px; }
+  .nav-links { gap:16px; }
+}
+
+.hero-text { position:relative; z-index:2; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(0,200,255,0.08); border:1px solid rgba(0,200,255,0.25);
+  border-radius:50px; padding:7px 18px;
+  font-size:0.7rem; font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:var(--azul); margin-bottom:28px;
+  animation: fadeUp 0.7s ease both;
+}
+.pulse-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:var(--verde); box-shadow:0 0 8px var(--verde);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.4)} }
+
+.hero h1 {
+  font-family:'Black Ops One', cursive;
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  line-height:0.95; letter-spacing:1px;
+  margin-bottom:20px;
+  animation: fadeUp 0.7s 0.1s ease both;
+}
+.hero h1 .gradient-text {
+  background: linear-gradient(120deg, var(--azul), var(--verde));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  display:block;
+}
+.hero-sub {
+  color:var(--gris); font-size:1rem; font-weight:300; line-height:1.8;
+  max-width:460px; margin-bottom:40px;
+  animation: fadeUp 0.7s 0.2s ease both;
+}
+.hero-btns {
+  display:flex; gap:14px; flex-wrap:wrap;
+  animation: fadeUp 0.7s 0.3s ease both;
+}
+.btn-prim {
+  background: linear-gradient(120deg, var(--azul), var(--verde));
+  color:var(--negro); padding:15px 34px; border:none; border-radius:6px;
+  font-family:'Exo 2',sans-serif; font-weight:900; font-size:0.85rem;
+  letter-spacing:2px; text-transform:uppercase; cursor:pointer; text-decoration:none;
+  transition:all 0.3s; box-shadow:0 0 30px rgba(0,200,255,0.25);
+}
+.btn-prim:hover { transform:translateY(-3px); box-shadow:0 0 50px rgba(0,200,255,0.45); }
+.btn-sec {
+  background:transparent; color:var(--blanco);
+  padding:15px 34px; border:1px solid var(--borde); border-radius:6px;
+  font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.85rem;
+  letter-spacing:2px; text-transform:uppercase; cursor:pointer; text-decoration:none;
+  transition:all 0.3s;
+}
+.btn-sec:hover { border-color:var(--azul); color:var(--azul); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* 3D CANVAS HERO */
+#hero-canvas {
+  width:100%; height:480px; border-radius:16px;
+  border:1px solid var(--borde);
+  background: radial-gradient(ellipse at center, #0a0a1a, #040408);
+  cursor:grab; display:block;
+  animation: fadeUp 0.7s 0.2s ease both;
+}
+#hero-canvas:active { cursor:grabbing; }
+.canvas-label {
+  text-align:center; font-size:0.68rem; color:var(--gris);
+  letter-spacing:2px; text-transform:uppercase; margin-top:10px;
+}
+
+/* STATS */
+.stats-bar {
+  position:relative; z-index:1;
+  display:flex; justify-content:center; gap:0;
+  border-top:1px solid var(--borde); border-bottom:1px solid var(--borde);
+  flex-wrap:wrap;
+}
+.stat-item {
+  padding:36px 48px; text-align:center;
+  border-right:1px solid var(--borde); flex:1; min-width:150px;
+}
+.stat-item:last-child { border-right:none; }
+.stat-n {
+  font-family:'Black Ops One',cursive; font-size:2.4rem;
+  background: linear-gradient(120deg, var(--azul), var(--verde));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.stat-l { color:var(--gris); font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; margin-top:5px; }
+
+/* SECTION WRAPPER */
+.section {
+  position:relative; z-index:1;
+  max-width:1200px; margin:0 auto; padding:90px 48px;
+}
+@media(max-width:700px){ .section { padding:70px 24px; } }
+
+.sec-label {
+  font-size:0.68rem; letter-spacing:4px; text-transform:uppercase;
+  color:var(--azul); font-weight:700; margin-bottom:10px;
+}
+.sec-title {
+  font-family:'Black Ops One',cursive;
+  font-size:clamp(2rem,5vw,3.2rem); line-height:1.05;
+  margin-bottom:14px;
+}
+.sec-sub {
+  color:var(--gris); font-size:0.95rem; font-weight:300;
+  line-height:1.75; max-width:480px; margin-bottom:50px;
+}
+
+/* MODELOS GRID */
+.models-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px;
+}
+.model-card {
+  background:var(--card); border:1px solid var(--borde); border-radius:14px;
+  padding:28px 24px; position:relative; overflow:hidden;
+  transition:all 0.35s; cursor:default;
+}
+.model-card::before {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, var(--azul), var(--verde));
+  transform:scaleX(0); transform-origin:left; transition:transform 0.35s;
+}
+.model-card:hover { transform:translateY(-7px); border-color:rgba(0,200,255,0.3); box-shadow:0 24px 60px rgba(0,0,0,0.4); }
+.model-card:hover::before { transform:scaleX(1); }
+
+.mc-icon { font-size:2.2rem; margin-bottom:14px; }
+.mc-name { font-family:'Black Ops One',cursive; font-size:1.15rem; letter-spacing:1px; margin-bottom:8px; }
+.mc-desc { color:var(--gris); font-size:0.78rem; line-height:1.6; margin-bottom:16px; }
+.mc-dim {
+  background:rgba(0,200,255,0.07); border:1px solid rgba(0,200,255,0.15);
+  border-radius:6px; padding:8px 12px; font-size:0.72rem; color:var(--azul);
+  letter-spacing:1px; margin-bottom:12px;
+}
+.mc-tag {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(255,106,0,0.1); border:1px solid rgba(255,106,0,0.25);
+  color:var(--naranja); padding:4px 10px; border-radius:50px;
+  font-size:0.68rem; font-weight:700; letter-spacing:1px; margin-bottom:18px;
+}
+.mc-price-row { display:flex; justify-content:space-between; align-items:baseline; }
+.mc-from { font-size:0.68rem; color:var(--gris); text-transform:uppercase; letter-spacing:1px; }
+.mc-price {
+  font-family:'Black Ops One',cursive; font-size:1.7rem;
+  background:linear-gradient(120deg,var(--azul),var(--verde));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+
+/* CONFIGURADOR */
+.config-wrap {
+  display:grid; grid-template-columns:1fr 400px; gap:28px; align-items:start;
+}
+@media(max-width:950px){ .config-wrap { grid-template-columns:1fr; } }
+
+.config-steps { display:flex; flex-direction:column; gap:18px; }
+
+.step-box {
+  background:var(--card); border:1px solid var(--borde); border-radius:14px;
+  padding:26px; transition:border-color 0.3s;
+}
+.step-box.active { border-color:rgba(0,200,255,0.35); box-shadow:0 0 30px rgba(0,200,255,0.04); }
+
+.step-hd { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+.step-num {
+  width:34px; height:34px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(120deg,var(--azul),var(--verde));
+  color:var(--negro); display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:0.82rem;
+}
+.step-t { font-weight:700; font-size:0.95rem; }
+.step-s { color:var(--gris); font-size:0.75rem; margin-top:2px; }
+
+/* OPCIONES MODELO */
+.model-opts { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.mopt {
+  background:rgba(255,255,255,0.02); border:2px solid var(--borde);
+  border-radius:10px; padding:16px 14px; cursor:pointer; transition:all 0.3s;
+  position:relative;
+}
+.mopt:hover { border-color:rgba(0,200,255,0.4); }
+.mopt.sel { border-color:var(--azul); background:rgba(0,200,255,0.06); box-shadow:0 0 20px rgba(0,200,255,0.1); }
+.mopt-check {
+  position:absolute; top:8px; right:8px;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--azul); color:var(--negro);
+  font-size:0.6rem; font-weight:900;
+  display:none; align-items:center; justify-content:center;
+}
+.mopt.sel .mopt-check { display:flex; }
+.mopt-icon { font-size:1.6rem; margin-bottom:6px; }
+.mopt-name { font-weight:700; font-size:0.85rem; }
+.mopt-hint { color:var(--gris); font-size:0.7rem; margin-top:3px; }
+
+/* OPCIONES SALIDAS */
+.outlet-opts { display:flex; flex-wrap:wrap; gap:8px; }
+.oopt {
+  flex:1; min-width:70px;
+  padding:12px 8px; border:2px solid var(--borde); border-radius:8px;
+  background:rgba(255,255,255,0.02); color:var(--blanco);
+  font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.82rem;
+  cursor:pointer; text-align:center; transition:all 0.3s;
+}
+.oopt:hover { border-color:rgba(0,200,255,0.4); }
+.oopt.sel { border-color:var(--azul); background:rgba(0,200,255,0.08); color:var(--azul); }
+.oopt.dis { opacity:0.25; cursor:not-allowed; pointer-events:none; }
+.outlet-note { font-size:0.72rem; color:var(--naranja); margin-top:10px; display:none; }
+.outlet-note.show { display:block; }
+
+/* SISTEMA + BOMBA */
+.sys-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.sopt {
+  border:2px solid var(--borde); border-radius:10px; padding:18px;
+  cursor:pointer; transition:all 0.3s; background:rgba(255,255,255,0.02);
+}
+.sopt:hover { border-color:rgba(0,255,170,0.4); }
+.sopt.sel { border-color:var(--verde); background:rgba(0,255,170,0.05); box-shadow:0 0 20px rgba(0,255,170,0.08); }
+.sopt.dis { opacity:0.25; cursor:not-allowed; pointer-events:none; }
+.sopt-name { font-weight:700; font-size:0.95rem; margin-bottom:6px; }
+.sopt-price { font-family:'Black Ops One',cursive; font-size:1.4rem; color:var(--verde); line-height:1; }
+.sopt-tag { font-size:0.68rem; color:var(--gris); letter-spacing:1px; margin-top:4px; }
+
+/* BOMBA */
+.bomba-opts { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+.bopt {
+  border:2px solid var(--borde); border-radius:10px; padding:16px;
+  cursor:pointer; transition:all 0.3s; background:rgba(255,255,255,0.02);
+}
+.bopt:hover { border-color:rgba(255,215,0,0.4); }
+.bopt.sel { border-color:var(--amarillo); background:rgba(255,215,0,0.05); }
+.bopt.dis { opacity:0.25; cursor:not-allowed; pointer-events:none; }
+.bopt-name { font-weight:700; font-size:0.85rem; margin-bottom:4px; }
+.bopt-desc { color:var(--gris); font-size:0.7rem; }
+
+/* PANEL COTIZACIÓN */
+.quote-panel {
+  background:var(--card); border:1px solid var(--borde); border-radius:16px;
+  padding:28px; position:sticky; top:96px;
+}
+.qp-title {
+  font-family:'Black Ops One',cursive; font-size:1rem; letter-spacing:2px;
+  color:var(--azul); text-transform:uppercase; margin-bottom:20px;
+}
+
+/* 3D EN PANEL */
+#config-canvas {
+  width:100%; height:220px; border-radius:10px;
+  background:radial-gradient(ellipse at center,#0a0a1a,#040408);
+  border:1px solid var(--borde); cursor:grab; display:block; margin-bottom:20px;
+}
+#config-canvas:active { cursor:grabbing; }
+
+.qrows { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+.qrow { display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; }
+.qrl { color:var(--gris); }
+.qrv { font-weight:700; }
+.qdiv { height:1px; background:var(--borde); margin:14px 0; }
+.qtotal { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:22px; }
+.qtl { font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; color:var(--gris); }
+.qtp {
+  font-family:'Black Ops One',cursive; font-size:2rem;
+  background:linear-gradient(120deg,var(--azul),var(--verde));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.q-pending { font-size:0.8rem; color:var(--gris); font-style:italic; text-align:center; padding:18px 0; }
+
+/* FORM */
+.cform { display:flex; flex-direction:column; gap:10px; }
+.cinput {
+  background:rgba(255,255,255,0.04); border:1px solid var(--borde);
+  border-radius:8px; padding:12px 14px; color:var(--blanco);
+  font-family:'Exo 2',sans-serif; font-size:0.85rem; width:100%;
+  transition:border-color 0.3s; outline:none; resize:none;
+}
+.cinput:focus { border-color:rgba(0,200,255,0.5); }
+.cinput::placeholder { color:var(--gris); }
+.btn-wa {
+  background:linear-gradient(120deg,#25D366,#128C7E);
+  color:white; padding:15px; border:none; border-radius:8px;
+  font-family:'Exo 2',sans-serif; font-weight:700; font-size:0.88rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  gap:9px; width:100%; transition:all 0.3s; letter-spacing:1px;
+}
+.btn-wa:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(37,211,102,0.3); }
+
+/* FOOTER */
+footer {
+  position:relative; z-index:1;
+  border-top:1px solid var(--borde); padding:40px 48px; text-align:center;
+}
+.footer-logo {
+  font-family:'Black Ops One',cursive; font-size:1.4rem; letter-spacing:4px;
+  background:linear-gradient(120deg,var(--azul),var(--verde));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  margin-bottom:8px;
+}
+.footer-sub { color:var(--gris); font-size:0.75rem; letter-spacing:1px; }
+
+/* DIVIDER */
+.sec-divider { height:1px; background:var(--borde); position:relative; z-index:1; }
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="grid-layer"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">AUTOBOX</div>
+  <div class="nav-links">
+    <a href="#modelos">Modelos</a>
+    <a href="#configurador">Cotizar</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-badge"><div class="pulse-dot"></div>Fabricación propia · Ecuador</div>
+    <h1>
+      DISPENSADORES<br>
+      <span class="gradient-text">AUTOBOX</span>
+    </h1>
+    <p class="hero-sub">Máquinas dispensadoras profesionales a medida. Configura tu equipo, visualiza el modelo 3D y recibe tu cotización al instante.</p>
+    <div class="hero-btns">
+      <a href="#configurador" class="btn-prim">Configurar ahora</a>
+      <a href="#modelos" class="btn-sec">Ver modelos</a>
+    </div>
+  </div>
+  <div>
+    <canvas id="hero-canvas"></canvas>
+    <div class="canvas-label">🖱️ Arrastra para rotar · Scroll para zoom</div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-n">3</div><div class="stat-l">Modelos</div></div>
+  <div class="stat-item"><div class="stat-n">2</div><div class="stat-l">Sistemas</div></div>
+  <div class="stat-item"><div class="stat-n">$200</div><div class="stat-l">Desde</div></div>
+  <div class="stat-item"><div class="stat-n">24H</div><div class="stat-l">Atención</div></div>
+</div>
+
+<!-- MODELOS -->
+<section class="section" id="modelos">
+  <div class="sec-label">Catálogo</div>
+  <h2 class="sec-title">Nuestros Modelos</h2>
+  <p class="sec-sub">Desde compactos dispensadores hasta estaciones multi-producto de alta capacidad.</p>
+  <div class="models-grid">
+    <div class="model-card">
+      <div class="mc-icon">📦</div>
+      <div class="mc-name">MINI</div>
+      <div class="mc-desc">Compacto, ideal para un solo producto con hasta 2 salidas. Perfecto para espacios reducidos.</div>
+      <div class="mc-dim">📐 50 frontal × 60 prof × 80 alto cm</div>
+      <div class="mc-tag">1 – 2 salidas</div>
+      <div class="mc-price-row"><div class="mc-from">Desde</div><div class="mc-price">$200</div></div>
+    </div>
+    <div class="model-card">
+      <div class="mc-icon">🗄️</div>
+      <div class="mc-name">ESTÁNDAR</div>
+      <div class="mc-desc">3 a 6 salidas, almacena hasta 6 recipientes. Disponible en bomba media o alta calidad.</div>
+      <div class="mc-dim">📐 60 frontal × 50 prof × 80 alto cm</div>
+      <div class="mc-tag">3 – 6 salidas</div>
+      <div class="mc-price-row"><div class="mc-from">Desde</div><div class="mc-price">$450</div></div>
+    </div>
+    <div class="model-card">
+      <div class="mc-icon">🏭</div>
+      <div class="mc-name">PREMIUM</div>
+      <div class="mc-desc">Alta capacidad con hasta 12 recipientes. Sistema PLC exclusivo con bombas de alta calidad.</div>
+      <div class="mc-dim">📐 Diseño a medida del cliente</div>
+      <div class="mc-tag">6 – 8 salidas</div>
+      <div class="mc-price-row"><div class="mc-from">Desde</div><div class="mc-price">$900</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="sec-divider"></div>
+
+<!-- CONFIGURADOR -->
+<section class="section" id="configurador">
+  <div class="sec-label">Cotizador interactivo</div>
+  <h2 class="sec-title">Configura tu<br>Máquina Ideal</h2>
+  <p class="sec-sub">Elige opciones, visualiza en 3D cómo queda y recibe tu cotización por WhatsApp.</p>
+
+  <div class="config-wrap">
+    <div class="config-steps">
+
+      <!-- PASO 1 -->
+      <div class="step-box active" id="s1">
+        <div class="step-hd">
+          <div class="step-num">1</div>
+          <div><div class="step-t">Modelo</div><div class="step-s">Elige según la cantidad de productos</div></div>
+        </div>
+        <div class="model-opts">
+          <div class="mopt" onclick="pickModel('mini')" id="m-mini">
+            <div class="mopt-check">✓</div>
+            <div class="mopt-icon">📦</div>
+            <div class="mopt-name">MINI</div>
+            <div class="mopt-hint">1-2 salidas · 50×60×80</div>
+          </div>
+          <div class="mopt" onclick="pickModel('estandar')" id="m-estandar">
+            <div class="mopt-check">✓</div>
+            <div class="mopt-icon">🗄️</div>
+            <div class="mopt-name">ESTÁNDAR</div>
+            <div class="mopt-hint">3-6 salidas · 60×50×80</div>
+          </div>
+          <div class="mopt" onclick="pickModel('premium')" id="m-premium">
+            <div class="mopt-check">✓</div>
+            <div class="mopt-icon">🏭</div>
+            <div class="mopt-name">PREMIUM</div>
+            <div class="mopt-hint">6-8 salidas · A medida</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2: SALIDAS -->
+      <div class="step-box" id="s2">
+        <div class="step-hd">
+          <div class="step-num">2</div>
+          <div><div class="step-t">Salidas de dispensado</div><div class="step-s">Cada salida es un producto o precio diferente</div></div>
+        </div>
+        <div class="outlet-opts" id="outlet-opts"></div>
+        <div class="outlet-note" id="outlet-note"></div>
+      </div>
+
+      <!-- PASO 3: SISTEMA -->
+      <div class="step-box" id="s3">
+        <div class="step-hd">
+          <div class="step-num">3</div>
+          <div><div class="step-t">Sistema de control</div><div class="step-s">Arduino más económico · PLC más robusto y con garantía</div></div>
+        </div>
+        <div class="sys-grid">
+          <div class="sopt" onclick="pickSys('arduino')" id="sys-arduino">
+            <div class="sopt-name">⚡ Arduino</div>
+            <div class="sopt-price" id="p-arduino">—</div>
+            <div class="sopt-tag">Sin garantía</div>
+          </div>
+          <div class="sopt" onclick="pickSys('plc')" id="sys-plc">
+            <div class="sopt-name">🔧 PLC</div>
+            <div class="sopt-price" id="p-plc">—</div>
+            <div class="sopt-tag">Con garantía</div>
+          </div>
+        </div>
+        <!-- BOMBA (solo si aplica) -->
+        <div id="bomba-section" style="display:none">
+          <div style="font-size:0.75rem;color:var(--gris);letter-spacing:2px;text-transform:uppercase;margin:18px 0 10px;">Calidad de bomba</div>
+          <div class="bomba-opts">
+            <div class="bopt" onclick="pickBomba('media')" id="b-media">
+              <div class="bopt-name">💧 Media calidad</div>
+              <div class="bopt-desc">Uso estándar, costo optimizado</div>
+            </div>
+            <div class="bopt" onclick="pickBomba('alta')" id="b-alta">
+              <div class="bopt-name">⚡ Alta calidad</div>
+              <div class="bopt-desc">Mayor durabilidad y rendimiento</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PANEL -->
+    <div class="quote-panel">
+      <div class="qp-title">Tu Cotización</div>
+      <canvas id="config-canvas"></canvas>
+      <div id="qcontent"><div class="q-pending">Selecciona un modelo para comenzar</div></div>
+      <div class="cform" id="cform" style="display:none">
+        <input type="text" class="cinput" id="cli-name" placeholder="Tu nombre" />
+        <input type="tel" class="cinput" id="cli-phone" placeholder="Tu teléfono (opcional)" />
+        <textarea class="cinput" id="cli-msg" placeholder="Detalle adicional..." rows="2"></textarea>
+        <button class="btn-wa" onclick="sendWA()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Enviar por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">AUTOBOX</div>
+  <div class="footer-sub">Máquinas dispensadoras profesionales · Fabricación propia</div>
+</footer>
+
+<script>
+// ─── PRECIOS ───────────────────────────────────────────────
+const PRICES = {
+  mini: {
+    1: { arduino: 200, plc_media: 450, plc_alta: null },
+    2: { arduino: 250, plc_media: 475, plc_alta: null }
+  },
+  estandar: {
+    3: { arduino: 450, plc_media: 600, plc_alta: null },
+    4: { arduino: null, plc_media: 665, plc_alta: 680 },
+    5: { arduino: null, plc_media: 730, plc_alta: 760 },
+    6: { arduino: null, plc_media: 795, plc_alta: 840 }
+  },
+  premium: {
+    6:  { arduino: null, plc_media: null, plc_alta: 900 },
+    7:  { arduino: null, plc_media: null, plc_alta: 980 },
+    8:  { arduino: null, plc_media: null, plc_alta: 1060 }
+  }
+};
+
+const MODEL_OUTLETS = { mini:[1,2], estandar:[3,4,5,6], premium:[6,7,8] };
+const MODEL_DIMS = { mini:'50×60×80 cm', estandar:'60×50×80 cm', premium:'Diseño a medida' };
+const MODEL_NAMES = { mini:'MINI', estandar:'ESTÁNDAR', premium:'PREMIUM' };
+
+// Estado
+let ST = { model:null, outlets:null, sys:null, bomba:null };
+
+// ─── PICK MODELO ───────────────────────────────────────────
+function pickModel(m) {
+  ST = { model:m, outlets:null, sys:null, bomba:null };
+  document.querySelectorAll('.mopt').forEach(e=>e.classList.remove('sel'));
+  document.getElementById('m-'+m).classList.add('sel');
+  document.getElementById('s2').classList.add('active');
+  document.getElementById('s3').classList.add('active');
+  renderOutlets(m);
+  clearSys();
+  updateQuote();
+  update3D();
+}
+
+function renderOutlets(m) {
+  const c = document.getElementById('outlet-opts');
+  const note = document.getElementById('outlet-note');
+  c.innerHTML = ''; note.className='outlet-note';
+  MODEL_OUTLETS[m].forEach(n => {
+    const b = document.createElement('button');
+    b.className = 'oopt';
+    b.textContent = n + (n===1?' salida':' salidas');
+    b.id = 'o-'+n;
+    b.onclick = () => pickOutlets(n);
+    c.appendChild(b);
+  });
+  if(m==='mini'){
+    note.textContent='⚠️ El modelo MINI soporta máximo 2 salidas.';
+    note.classList.add('show');
+  }
+}
+
+function pickOutlets(n) {
+  ST.outlets = n; ST.sys = null; ST.bomba = null;
+  document.querySelectorAll('.oopt').forEach(e=>e.classList.remove('sel'));
+  const el = document.getElementById('o-'+n);
+  if(el) el.classList.add('sel');
+  updateSysPrices();
+  clearSys();
+  updateQuote();
+  update3D();
+}
+
+function updateSysPrices() {
+  if(!ST.model||!ST.outlets) return;
+  const p = PRICES[ST.model][ST.outlets];
+  if(!p) return;
+
+  const aEl = document.getElementById('p-arduino');
+  const pEl = document.getElementById('p-plc');
+  const aSys = document.getElementById('sys-arduino');
+  const pSys = document.getElementById('sys-plc');
+  const bSec = document.getElementById('bomba-section');
+
+  // Arduino
+  if(p.arduino===null){
+    aEl.textContent='N/D'; aSys.classList.add('dis');
+  } else {
+    aEl.textContent='$'+p.arduino; aSys.classList.remove('dis');
+  }
+
+  // PLC — precio base
+  const plcBase = p.plc_alta!==null ? p.plc_alta : (p.plc_media!==null ? p.plc_media : null);
+  if(plcBase===null){
+    pEl.textContent='N/D'; pSys.classList.add('dis');
+  } else {
+    pEl.textContent='Desde $'+plcBase; pSys.classList.remove('dis');
+  }
+
+  // Mostrar sección bomba si hay ambas opciones
+  const hasBomba = p.plc_media!==null && p.plc_alta!==null;
+  bSec.style.display = hasBomba ? 'block' : 'none';
+
+  // Si solo hay alta calidad, ocultar opción media
+  document.getElementById('b-media').classList.toggle('dis', p.plc_media===null);
+}
+
+function clearSys() {
+  ST.sys=null; ST.bomba=null;
+  document.querySelectorAll('.sopt').forEach(e=>e.classList.remove('sel'));
+  document.querySelectorAll('.bopt').forEach(e=>e.classList.remove('sel'));
+}
+
+function pickSys(s) {
+  ST.sys=s; ST.bomba=null;
+  document.querySelectorAll('.sopt').forEach(e=>e.classList.remove('sel'));
+  document.getElementById('sys-'+s).classList.add('sel');
+  // si es arduino, bomba no aplica
+  const bSec = document.getElementById('bomba-section');
+  if(s==='arduino') { bSec.style.display='none'; ST.bomba='media'; }
+  updateQuote();
+}
+
+function pickBomba(b) {
+  ST.bomba=b;
+  document.querySelectorAll('.bopt').forEach(e=>e.classList.remove('sel'));
+  document.getElementById('b-'+b).classList.add('sel');
+  updateQuote();
+}
+
+function getPrice() {
+  if(!ST.model||!ST.outlets||!ST.sys) return null;
+  const p = PRICES[ST.model][ST.outlets];
+  if(!p) return null;
+  if(ST.sys==='arduino') return p.arduino;
+  if(ST.sys==='plc'){
+    if(ST.bomba==='alta') return p.plc_alta;
+    if(ST.bomba==='media') return p.plc_media;
+    // si no hay bomba elegida pero solo hay una opción
+    if(p.plc_alta===null) return p.plc_media;
+    if(p.plc_media===null) return p.plc_alta;
+    return null; // esperar elección
+  }
+  return null;
+}
+
+function updateQuote() {
+  const el = document.getElementById('qcontent');
+  const form = document.getElementById('cform');
+  if(!ST.model){ el.innerHTML='<div class="q-pending">Selecciona un modelo para comenzar</div>'; form.style.display='none'; return; }
+
+  const price = getPrice();
+  let html = '<div class="qrows">';
+  html += `<div class="qrow"><span class="qrl">Modelo</span><span class="qrv">${MODEL_NAMES[ST.model]}</span></div>`;
+  html += `<div class="qrow"><span class="qrl">Medidas</span><span class="qrv">${MODEL_DIMS[ST.model]}</span></div>`;
+  if(ST.outlets) html += `<div class="qrow"><span class="qrl">Salidas</span><span class="qrv">${ST.outlets}</span></div>`;
+  if(ST.sys)     html += `<div class="qrow"><span class="qrl">Sistema</span><span class="qrv">${ST.sys==='arduino'?'Arduino':'PLC'}</span></div>`;
+  if(ST.bomba&&ST.sys==='plc') html += `<div class="qrow"><span class="qrl">Bomba</span><span class="qrv">${ST.bomba==='alta'?'Alta calidad':'Media calidad'}</span></div>`;
+  html += '</div><div class="qdiv"></div>';
+
+  if(price!==null){
+    html += `<div class="qtotal"><span class="qtl">Total estimado</span><span class="qtp">$${price}</span></div>`;
+    form.style.display='flex';
+  } else {
+    html += '<div class="q-pending">Completa todos los pasos para ver el precio</div>';
+    form.style.display='none';
+  }
+  el.innerHTML = html;
+}
+
+function sendWA() {
+  const price = getPrice();
+  if(!ST.model||!ST.outlets||!ST.sys){ alert('Completa todos los pasos primero.'); return; }
+  const name = document.getElementById('cli-name').value.trim()||'Cliente';
+  const phone = document.getElementById('cli-phone').value.trim();
+  const msg = document.getElementById('cli-msg').value.trim();
+  let txt = `🤖 *COTIZACIÓN AUTOBOX*\n\n`;
+  txt += `👤 ${name}\n`;
+  if(phone) txt += `📞 ${phone}\n`;
+  txt += `\n📋 *Configuración:*\n`;
+  txt += `• Modelo: ${MODEL_NAMES[ST.model]}\n`;
+  txt += `• Medidas: ${MODEL_DIMS[ST.model]}\n`;
+  txt += `• Salidas: ${ST.outlets}\n`;
+  txt += `• Sistema: ${ST.sys==='arduino'?'Arduino':'PLC'}\n`;
+  if(ST.sys==='plc'&&ST.bomba) txt += `• Bomba: ${ST.bomba==='alta'?'Alta calidad':'Media calidad'}\n`;
+  txt += `• 💰 Precio: $${price}\n`;
+  if(msg) txt += `\n💬 ${msg}`;
+  const num = '+593963924706'; // ← CAMBIA por tu número real
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(txt)}`, '_blank');
+}
+
+// ─── THREE.JS ───────────────────────────────────────────────
+function buildScene(canvasId, width, height) {
+  const canvas = document.getElementById(canvasId);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 100);
+  camera.position.set(0, 0.5, 3.5);
+
+  // Luces
+  const ambLight = new THREE.AmbientLight(0x1a2a3a, 2);
+  scene.add(ambLight);
+  const dirLight = new THREE.DirectionalLight(0x00c8ff, 3);
+  dirLight.position.set(3, 5, 4);
+  scene.add(dirLight);
+  const rimLight = new THREE.DirectionalLight(0x00ffaa, 1.5);
+  rimLight.position.set(-3, -2, -3);
+  scene.add(rimLight);
+  const pointLight = new THREE.PointLight(0x00c8ff, 2, 8);
+  pointLight.position.set(0, 2, 2);
+  scene.add(pointLight);
+
+  // Materiales
+  const bodyMat = new THREE.MeshPhongMaterial({ color:0x0d1a28, specular:0x003355, shininess:80 });
+  const screenMat = new THREE.MeshPhongMaterial({ color:0x001a0d, emissive:0x00ff88, emissiveIntensity:0.4 });
+  const btnMat = new THREE.MeshPhongMaterial({ color:0x003344, emissive:0x00c8ff, emissiveIntensity:0.6 });
+  const slotMat = new THREE.MeshPhongMaterial({ color:0x050a10, emissive:0xff6a00, emissiveIntensity:0.3 });
+  const edgeMat = new THREE.MeshPhongMaterial({ color:0x00c8ff, emissive:0x00c8ff, emissiveIntensity:0.5 });
+  const wheelMat = new THREE.MeshPhongMaterial({ color:0x111122 });
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  function buildMachine(outlets=1, modelType='mini') {
+    while(group.children.length) group.remove(group.children[0]);
+
+    // Dimensiones según modelo
+    let W=1, D=0.8, H=1.6;
+    if(modelType==='estandar'){ W=1.2; D=0.8; H=1.6; }
+    if(modelType==='premium'){ W=1.8; D=0.9; H=2.0; }
+
+    // Cuerpo principal
+    const bodyGeo = new THREE.BoxGeometry(W, H, D);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.castShadow = true;
+    group.add(body);
+
+    // Bordes brillantes (aristas)
+    const edgesGeo = new THREE.EdgesGeometry(bodyGeo);
+    const edges = new THREE.LineSegments(edgesGeo, new THREE.LineBasicMaterial({ color:0x00c8ff, transparent:true, opacity:0.35 }));
+    group.add(edges);
+
+    // Pantalla
+    const scrGeo = new THREE.BoxGeometry(W*0.75, H*0.22, 0.02);
+    const screen = new THREE.Mesh(scrGeo, screenMat);
+    screen.position.set(-W*0.02, H*0.28, D/2+0.01);
+    group.add(screen);
+
+    // Botones (uno por salida)
+    const totalBtns = Math.min(outlets, 8);
+    const btnSpacing = W*0.7 / (totalBtns+1);
+    for(let i=0; i<totalBtns; i++){
+      const bGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.03, 16);
+      const btn = new THREE.Mesh(bGeo, btnMat);
+      btn.rotation.x = Math.PI/2;
+      btn.position.set(-W*0.35 + btnSpacing*(i+1), H*0.05, D/2+0.02);
+      group.add(btn);
+    }
+
+    // Slot dispensador
+    const slotGeo = new THREE.BoxGeometry(W*0.55, H*0.14, 0.02);
+    const slot = new THREE.Mesh(slotGeo, slotMat);
+    slot.position.set(0, -H*0.12, D/2+0.01);
+    group.add(slot);
+
+    // Monedero (lateral derecho)
+    const coinGeo = new THREE.BoxGeometry(0.08, 0.18, 0.04);
+    const coin = new THREE.Mesh(coinGeo, edgeMat);
+    coin.position.set(W/2-0.04, H*0.15, D/2-0.1);
+    group.add(coin);
+
+    // Ruedas
+    const wGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.06, 16);
+    [[-W/2+0.15,-H/2-0.04,-D/2+0.12],[W/2-0.15,-H/2-0.04,-D/2+0.12],
+     [-W/2+0.15,-H/2-0.04,D/2-0.12],[W/2-0.15,-H/2-0.04,D/2-0.12]].forEach(pos=>{
+      const w = new THREE.Mesh(wGeo, wheelMat);
+      w.position.set(...pos);
+      group.add(w);
+    });
+
+    // Glow panel frontal
+    const glowGeo = new THREE.PlaneGeometry(W*0.9, H*0.85);
+    const glowMat = new THREE.MeshBasicMaterial({ color:0x00c8ff, transparent:true, opacity:0.03, side:THREE.DoubleSide });
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    glow.position.set(0, 0, D/2+0.03);
+    group.add(glow);
+  }
+
+  // Orbit control manual
+  let isDragging=false, prevX=0, prevY=0, rotX=0.15, rotY=0.4, targetRotX=0.15, targetRotY=0.4;
+  let zoom=1, targetZoom=1;
+
+  canvas.addEventListener('mousedown', e=>{ isDragging=true; prevX=e.clientX; prevY=e.clientY; });
+  window.addEventListener('mouseup', ()=>isDragging=false);
+  window.addEventListener('mousemove', e=>{
+    if(!isDragging) return;
+    targetRotY += (e.clientX-prevX)*0.012;
+    targetRotX += (e.clientY-prevY)*0.008;
+    targetRotX = Math.max(-0.8, Math.min(0.8, targetRotX));
+    prevX=e.clientX; prevY=e.clientY;
+  });
+  canvas.addEventListener('wheel', e=>{ targetZoom = Math.max(0.5, Math.min(2, targetZoom + e.deltaY*0.001)); });
+  // Touch
+  let touchPrev={x:0,y:0};
+  canvas.addEventListener('touchstart', e=>{ touchPrev={x:e.touches[0].clientX,y:e.touches[0].clientY}; });
+  canvas.addEventListener('touchmove', e=>{
+    e.preventDefault();
+    targetRotY += (e.touches[0].clientX-touchPrev.x)*0.012;
+    targetRotX += (e.touches[0].clientY-touchPrev.y)*0.008;
+    touchPrev={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  }, {passive:false});
+
+  let autoRotate = true;
+  canvas.addEventListener('mousedown', ()=>autoRotate=false);
+  canvas.addEventListener('touchstart', ()=>autoRotate=false);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if(autoRotate) targetRotY += 0.005;
+    rotX += (targetRotX - rotX)*0.08;
+    rotY += (targetRotY - rotY)*0.08;
+    zoom += (targetZoom - zoom)*0.08;
+    group.rotation.x = rotX;
+    group.rotation.y = rotY;
+    camera.position.z = 3.5 * zoom;
+    renderer.render(scene, camera);
+  }
+
+  buildMachine(1, 'mini');
+  animate();
+  return { buildMachine };
+}
+
+// Init hero canvas
+const heroC = document.getElementById('hero-canvas');
+const heroScene = buildScene('hero-canvas', heroC.clientWidth || 400, heroC.clientHeight || 480);
+
+// Init config canvas
+const cfgC = document.getElementById('config-canvas');
+const cfgScene = buildScene('config-canvas', cfgC.clientWidth || 360, 220);
+
+function update3D() {
+  const outlets = ST.outlets || 1;
+  const model = ST.model || 'mini';
+  cfgScene.buildMachine(outlets, model);
+  heroScene.buildMachine(outlets, model);
+}
+
+// Resize
+window.addEventListener('resize', ()=>{
+  // Re-render simplificado: recargar si cambia mucho
+});
+</script>
+</body>
+</html>
