@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;0,900;1,300&display=swap');
 
 :root {
-  --negro: #080810;
-  --acero: #10101e;
-  --card: #0e0e1c;
-  --borde: #1e1e38;
-  --azul: #00c8ff;
-  --verde: #00ffaa;
+  --negro: #ffffff;
+  --acero: #f0f4f8;
+  --card: #f8fafc;
+  --borde: #e2e8f0;
+  --azul: #0099cc;
+  --verde: #00aa77;
   --naranja: #ff6a00;
-  --amarillo: #ffd700;
-  --blanco: #eef2ff;
-  --gris: #7080a0;
+  --amarillo: #d4a000;
+  --blanco: #1a202c;
+  --gris: #4a5568;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -19,22 +19,19 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--negro);
   color: var(--blanco);
-  font-family: 'Exo 2', sans-serif;
-  overflow-x: hidden;
-}
 
 .bg-layer {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 50% at 5% 15%, rgba(0,200,255,0.07) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 95% 85%, rgba(0,255,170,0.05) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 50% at 5% 15%, rgba(0,153,204,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 95% 85%, rgba(0,170,119,0.06) 0%, transparent 60%);
 }
 
 .grid-layer {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background-image:
-    linear-gradient(rgba(0,200,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,200,255,0.025) 1px, transparent 1px);
+    linear-gradient(rgba(0,153,204,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,153,204,0.05) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
