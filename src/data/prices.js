@@ -7,22 +7,22 @@ export const MODELS = {
     outlets: [1, 2],
     systems: ['arduino', 'plc'],
     prices: {
-      1: { arduino: 250, plc: 450 },
-      2: { arduino: 350, plc: 550 }
+      1: { arduino: 350, plc: 500 },
+      2: { arduino: 450, plc: 600 }
     }
   },
   estandar: {
     name: 'ESTÁNDAR',
-    medidas: '60 frontal × 50 prof × 1.40 alto cm',
+    medidas: '60 frontal × 50 prof × 140 alto cm',
     description: '3 a 6 salidas, almacena hasta 6 recipientes.',
     icon: '🗄️',
     outlets: [3, 4, 5, 6],
     systems: ['arduino', 'plc'],
     prices: {
-      3: { arduino: 450, plc: 700 },
-      4: { arduino: null, plc: 770 },
-      5: { arduino: null, plc: 840 },
-      6: { arduino: null, plc: 900 }
+      3: { arduino: 550, plc: 800 },
+      4: { arduino: null, plc: 870 },
+      5: { arduino: null, plc: 940 },
+      6: { arduino: null, plc: 1000 }
     }
   },
   premium: {
@@ -33,9 +33,9 @@ export const MODELS = {
     outlets: [6, 7, 8],
     systems: ['plc'],
     prices: {
-      6: { plc: 900 },
-      7: { plc: 980 },
-      8: { plc: 1060 }
+      6: { plc: 1000 },
+      7: { plc: 1080 },
+      8: { plc: 1160 }
     }
   }
 }
