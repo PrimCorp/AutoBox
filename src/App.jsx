@@ -15,7 +15,7 @@ function Stats() {
       {[
         { n: '3', l: 'Modelos' },
         { n: '2', l: 'Sistemas' },
-        { n: '$200', l: 'Desde' },
+        { n: '$350', l: 'Desde' },
         { n: '24H', l: 'Atención' },
       ].map(s => (
         <div key={s.l} style={{
